@@ -1,0 +1,1620 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>迅行打车系统</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18222f;
+      --muted: #657282;
+      --line: #d9e1ea;
+      --surface: #ffffff;
+      --panel: #f5f8fb;
+      --green: #17845b;
+      --yellow: #f2b632;
+      --red: #d34c4c;
+      --blue: #2b72d6;
+      --teal: #0f9a9a;
+      --shadow: 0 16px 40px rgba(35, 47, 61, .12);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #e9eef4;
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    [dir="rtl"] body {
+      font-family: Inter, "Geeza Pro", "Tahoma", "Arial", system-ui, -apple-system, sans-serif;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+    }
+
+    aside {
+      background: #142033;
+      color: #f7fafc;
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--yellow), #fff3b0);
+      display: grid;
+      place-items: center;
+      color: #142033;
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: #b8c4d2;
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #d9e4f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      text-align: left;
+    }
+
+    [dir="rtl"] .nav button { text-align: right; }
+
+    .nav button.active {
+      background: #24364f;
+      color: #ffffff;
+    }
+
+    .nav svg, .icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+    }
+
+    .side-stats {
+      margin-top: auto;
+      display: grid;
+      gap: 10px;
+    }
+
+    .side-stat {
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .side-stat span {
+      display: block;
+      color: #b8c4d2;
+      font-size: 12px;
+    }
+
+    .side-stat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 20px;
+    }
+
+    main {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      min-height: 72px;
+      background: rgba(255,255,255,.92);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      backdrop-filter: blur(14px);
+    }
+
+    .header-title h2 {
+      margin: 0;
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+
+    .header-title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      width: min(360px, 38vw);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      height: 42px;
+    }
+
+    .search input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      width: 100%;
+      min-width: 0;
+      color: var(--ink);
+    }
+
+    .primary, .ghost, .danger {
+      border: 0;
+      border-radius: 8px;
+      min-height: 42px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .primary {
+      background: var(--yellow);
+      color: #1d2430;
+      font-weight: 800;
+    }
+
+    .ghost {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .danger {
+      background: #fde9e9;
+      color: #9d3030;
+    }
+
+    .content {
+      min-width: 0;
+      padding: 22px 24px 28px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(320px, 410px) minmax(420px, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      min-height: 58px;
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .panel-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .form {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: #334052;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      color: var(--ink);
+      padding: 0 11px;
+      outline: 0;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(43, 114, 214, .12);
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .fare {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: hidden;
+    }
+
+    .fare div {
+      padding: 12px;
+      border-right: 1px solid var(--line);
+    }
+
+    .fare div:last-child { border-right: 0; }
+    .fare span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .fare strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 18px;
+    }
+
+    .map-shell {
+      min-height: 590px;
+      display: grid;
+      grid-template-rows: auto minmax(360px, 1fr) auto;
+      overflow: hidden;
+    }
+
+    .map-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .segmented {
+      display: inline-grid;
+      grid-auto-flow: column;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .segmented button {
+      min-height: 36px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: transparent;
+      padding: 0 12px;
+      color: var(--muted);
+    }
+
+    .segmented button:last-child { border-right: 0; }
+    .segmented button.active {
+      background: #eaf2ff;
+      color: var(--blue);
+      font-weight: 800;
+    }
+
+    .language-switch {
+      display: inline-grid;
+      grid-auto-flow: column;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+      height: 42px;
+      flex: 0 0 auto;
+    }
+
+    .language-switch button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      min-width: 52px;
+      padding: 0 10px;
+      font-weight: 800;
+    }
+
+    .language-switch button.active {
+      background: #142033;
+      color: #fff;
+    }
+
+    .map {
+      position: relative;
+      overflow: hidden;
+      min-height: 360px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.44) 1px, transparent 1px) 0 0 / 80px 80px,
+        linear-gradient(0deg, rgba(255,255,255,.44) 1px, transparent 1px) 0 0 / 80px 80px,
+        radial-gradient(circle at 20% 18%, rgba(23,132,91,.18), transparent 22%),
+        radial-gradient(circle at 82% 30%, rgba(43,114,214,.18), transparent 24%),
+        #dce8ed;
+    }
+
+    .road {
+      position: absolute;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(102,116,131,.22);
+      box-shadow: 0 2px 10px rgba(65,78,92,.08);
+    }
+
+    .road.r1 { width: 130%; height: 42px; top: 27%; left: -14%; transform: rotate(-9deg); }
+    .road.r2 { width: 120%; height: 36px; top: 61%; left: -10%; transform: rotate(13deg); }
+    .road.r3 { width: 36px; height: 120%; top: -8%; left: 35%; transform: rotate(8deg); }
+    .road.r4 { width: 44px; height: 120%; top: -10%; left: 71%; transform: rotate(-7deg); }
+
+    .route {
+      position: absolute;
+      left: 24%;
+      top: 36%;
+      width: 52%;
+      height: 32%;
+      border: 5px solid transparent;
+      border-top-color: var(--blue);
+      border-right-color: var(--blue);
+      border-radius: 0 54px 0 0;
+      filter: drop-shadow(0 6px 8px rgba(43,114,214,.22));
+    }
+
+    .pin, .car {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+    }
+
+    .pin {
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 50% 4px;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      box-shadow: 0 8px 16px rgba(0,0,0,.18);
+    }
+
+    .pin span {
+      transform: rotate(45deg);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .pickup { background: var(--green); left: 24%; top: 36%; }
+    .dropoff { background: var(--red); left: 76%; top: 68%; }
+
+    .car {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #142033;
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(0,0,0,.18);
+      transition: left .5s ease, top .5s ease, background .3s ease;
+    }
+
+    .car.free { background: var(--green); }
+    .car.busy { background: var(--blue); }
+    .car.offline { background: #8792a1; }
+
+    .map-footer {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .map-footer div {
+      padding: 13px 14px;
+      border-right: 1px solid var(--line);
+    }
+
+    .map-footer div:last-child { border-right: 0; }
+    .map-footer span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .map-footer strong { display: block; margin-top: 4px; }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 15px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric strong {
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .lower {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+      gap: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    [dir="rtl"] th,
+    [dir="rtl"] td {
+      text-align: right;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      background: #fbfcfe;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 0 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.waiting { color: #9a6800; background: #fff1c8; }
+    .badge.accepted { color: #17549c; background: #e2efff; }
+    .badge.finished { color: #176348; background: #dff5ea; }
+    .badge.cancelled { color: #9b3030; background: #fde4e4; }
+    .badge.online { color: #176348; background: #dff5ea; }
+    .badge.service { color: #17549c; background: #e2efff; }
+    .badge.rest { color: #5e6672; background: #eceff3; }
+
+    .drivers {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .driver-row {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 72px;
+      padding: 11px;
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      background: #fbfcfe;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #142033;
+      background: #ffe29a;
+    }
+
+    .driver-row strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .driver-row small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      max-width: min(420px, calc(100vw - 44px));
+      background: #142033;
+      color: #fff;
+      border-radius: 8px;
+      padding: 13px 15px;
+      box-shadow: var(--shadow);
+      transform: translateY(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s ease;
+      z-index: 20;
+    }
+
+    [dir="rtl"] .toast {
+      right: auto;
+      left: 22px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1080px) {
+      .app { grid-template-columns: 88px minmax(0, 1fr); }
+      aside { padding: 16px 12px; align-items: center; }
+      .brand div:last-child, .nav span, .side-stats { display: none; }
+      .nav button { justify-content: center; width: 48px; height: 48px; padding: 0; }
+      .workspace, .lower { grid-template-columns: 1fr; }
+      .map-shell { min-height: 520px; }
+    }
+
+    @media (max-width: 720px) {
+      .app { grid-template-columns: 1fr; }
+      aside {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      .brand div:last-child { display: block; }
+      .nav { grid-auto-flow: column; }
+      header {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 15px;
+      }
+      .header-actions, .search { width: 100%; }
+      .language-switch { width: 100%; grid-auto-columns: 1fr; }
+      .content { padding: 14px; }
+      .two, .fare, .status-grid, .map-footer { grid-template-columns: 1fr; }
+      .fare div, .map-footer div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .fare div:last-child, .map-footer div:last-child { border-bottom: 0; }
+      .map-shell { min-height: 480px; }
+      th:nth-child(3), td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">行</div>
+        <div>
+          <h1>迅行打车</h1>
+          <p>城市出行调度台</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="主导航">
+        <button class="active" data-view="passenger" title="乘客叫车">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l2-5a3 3 0 0 1 3-2h8a3 3 0 0 1 3 2l2 5"/><path d="M5 13h14v5H5z"/><path d="M7 18v2"/><path d="M17 18v2"/></svg>
+          <span>乘客叫车</span>
+        </button>
+        <button data-view="driver" title="司机接单">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6"/><path d="M3 12h6"/><path d="M15 12h6"/></svg>
+          <span>司机接单</span>
+        </button>
+        <button data-view="admin" title="运营看板">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5"/><path d="M8 19v-7"/><path d="M13 19V8"/><path d="M18 19v-4"/></svg>
+          <span>运营看板</span>
+        </button>
+      </nav>
+      <div class="side-stats">
+        <div class="side-stat"><span>今日订单</span><strong id="sideOrders">128</strong></div>
+        <div class="side-stat"><span>在线司机</span><strong id="sideDrivers">24</strong></div>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div class="header-title">
+          <h2 id="viewTitle">乘客叫车</h2>
+          <p id="viewSubtitle">输入上车点和目的地，系统自动估价并匹配最近司机。</p>
+        </div>
+        <div class="header-actions">
+          <div class="search">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input id="globalSearch" placeholder="搜索订单、司机、地点">
+          </div>
+          <div class="language-switch" aria-label="语言">
+            <button class="active" type="button" data-lang="zh-CN">中</button>
+            <button type="button" data-lang="en-US">EN</button>
+            <button type="button" data-lang="ar-SA">ع</button>
+          </div>
+          <button class="ghost" id="refreshBtn" title="刷新数据">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            刷新
+          </button>
+        </div>
+      </header>
+
+      <section class="content">
+        <section class="workspace">
+          <div class="panel" id="passengerPanel">
+            <div class="panel-head">
+              <div>
+                <h3>发起行程</h3>
+                <span>智能估价与自动派单</span>
+              </div>
+            </div>
+            <form class="form" id="rideForm">
+              <label>上车地点
+                <input id="pickupInput" value="人民广场 5 号口" required>
+              </label>
+              <label>目的地
+                <input id="dropoffInput" value="虹桥火车站 T2" required>
+              </label>
+              <div class="two">
+                <label>车型
+                  <select id="carType">
+                    <option value="comfort">舒适型</option>
+                    <option value="economy">经济型</option>
+                    <option value="business">商务型</option>
+                  </select>
+                </label>
+                <label>人数
+                  <select id="passengerCount">
+                    <option>1</option><option>2</option><option>3</option><option>4</option>
+                  </select>
+                </label>
+              </div>
+              <div class="fare">
+                <div><span>预计价格</span><strong id="farePrice">¥58</strong></div>
+                <div><span>预计距离</span><strong id="fareDistance">18.6 km</strong></div>
+                <div><span>候车时间</span><strong id="fareEta">4 分钟</strong></div>
+              </div>
+              <button class="primary" type="submit">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+                立即叫车
+              </button>
+            </form>
+          </div>
+
+          <div class="panel hidden" id="driverPanel">
+            <div class="panel-head">
+              <div>
+                <h3>司机工作台</h3>
+                <span>接单、出发、送达状态同步</span>
+              </div>
+              <span class="badge online">在线</span>
+            </div>
+            <div class="form">
+              <label>当前车辆
+                <select id="driverSelect"></select>
+              </label>
+              <div class="fare">
+                <div><span>待接订单</span><strong id="waitingCount">3</strong></div>
+                <div><span>今日收入</span><strong id="driverIncome">¥426</strong></div>
+                <div><span>服务评分</span><strong>4.9</strong></div>
+              </div>
+              <button class="primary" id="acceptBtn" type="button">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                接受最近订单
+              </button>
+              <button class="ghost" id="finishBtn" type="button">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                标记完成
+              </button>
+            </div>
+          </div>
+
+          <div class="panel hidden" id="adminPanel">
+            <div class="panel-head">
+              <div>
+                <h3>运营调度</h3>
+                <span>订单监控、司机分布与异常处理</span>
+              </div>
+              <button class="danger" id="surgeBtn" type="button">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h8l-1 8 10-12h-8z"/></svg>
+                高峰加价
+              </button>
+            </div>
+            <div class="form">
+              <div class="fare">
+                <div><span>完成率</span><strong id="completionRate">92%</strong></div>
+                <div><span>投诉数</span><strong>2</strong></div>
+                <div><span>平均响应</span><strong>38 秒</strong></div>
+              </div>
+              <button class="primary" id="dispatchBtn" type="button">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v16"/><path d="M4 7h11l-1.5 4L15 15H4"/></svg>
+                一键补充运力
+              </button>
+            </div>
+          </div>
+
+          <div class="panel map-shell">
+            <div class="map-toolbar">
+              <div class="segmented" aria-label="地图图层">
+                <button class="active" data-layer="traffic">路况</button>
+                <button data-layer="drivers">司机</button>
+                <button data-layer="heat">热区</button>
+              </div>
+              <button class="ghost" id="locateBtn" title="定位车辆">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/></svg>
+                定位
+              </button>
+            </div>
+            <div class="map" id="map">
+              <div class="road r1"></div>
+              <div class="road r2"></div>
+              <div class="road r3"></div>
+              <div class="road r4"></div>
+              <div class="route"></div>
+              <div class="pin pickup"><span>上</span></div>
+              <div class="pin dropoff"><span>到</span></div>
+            </div>
+            <div class="map-footer">
+              <div><span>调度区域</span><strong>上海核心区</strong></div>
+              <div><span>拥堵指数</span><strong id="trafficIndex">中等 62</strong></div>
+              <div><span>最近司机</span><strong id="nearestDriver">张师傅 1.2 km</strong></div>
+              <div><span>订单状态</span><strong id="currentStatus">等待派单</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="status-grid">
+          <div class="metric"><span>进行中订单</span><strong id="activeOrders">16</strong></div>
+          <div class="metric"><span>待派单订单</span><strong id="pendingOrders">3</strong></div>
+          <div class="metric"><span>在线司机</span><strong id="onlineDrivers">24</strong></div>
+          <div class="metric"><span>今日流水</span><strong id="gmv">¥12,840</strong></div>
+        </section>
+
+        <section class="lower">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>订单列表</h3>
+                <span>实时同步乘客与司机状态</span>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>订单</th>
+                  <th>路线</th>
+                  <th>司机</th>
+                  <th>金额</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>司机队列</h3>
+                <span>空闲车辆优先匹配</span>
+              </div>
+            </div>
+            <div class="drivers" id="driversList"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const i18n = {
+      "zh-CN": {
+        langName: "中文",
+        title: "迅行打车系统",
+        brand: "迅行打车",
+        brandSub: "城市出行调度台",
+        mark: "行",
+        nav: { passenger: "乘客叫车", driver: "司机接单", admin: "运营看板" },
+        titles: {
+          passenger: ["乘客叫车", "输入上车点和目的地，系统自动估价并匹配最近司机。"],
+          driver: ["司机接单", "查看附近订单，更新接驾与完成状态。"],
+          admin: ["运营看板", "监控订单、司机、流水与高峰运力。"]
+        },
+        search: "搜索订单、司机、地点",
+        refresh: "刷新",
+        sideOrders: "今日订单",
+        sideDrivers: "在线司机",
+        passengerPanel: ["发起行程", "智能估价与自动派单"],
+        pickup: "上车地点",
+        dropoff: "目的地",
+        carType: "车型",
+        passengerCount: "人数",
+        carTypes: { comfort: "舒适型", economy: "经济型", business: "商务型" },
+        fare: { price: "预计价格", distance: "预计距离", eta: "候车时间" },
+        callRide: "立即叫车",
+        driverPanel: ["司机工作台", "接单、出发、送达状态同步"],
+        currentVehicle: "当前车辆",
+        waitingOrders: "待接订单",
+        todayIncome: "今日收入",
+        rating: "服务评分",
+        accept: "接受最近订单",
+        finish: "标记完成",
+        adminPanel: ["运营调度", "订单监控、司机分布与异常处理"],
+        surge: "高峰加价",
+        completion: "完成率",
+        complaints: "投诉数",
+        avgResponse: "平均响应",
+        dispatch: "一键补充运力",
+        layers: { label: "地图图层", traffic: "路况", drivers: "司机", heat: "热区" },
+        locate: "定位",
+        pins: { pickup: "上", dropoff: "到" },
+        mapFooter: { area: "调度区域", traffic: "拥堵指数", nearest: "最近司机", status: "订单状态" },
+        areaValue: "上海核心区",
+        trafficNormal: "中等 62",
+        trafficPeak: "高峰 88",
+        initialStatus: "等待派单",
+        metrics: { active: "进行中订单", pending: "待派单订单", online: "在线司机", gmv: "今日流水" },
+        ordersPanel: ["订单列表", "实时同步乘客与司机状态"],
+        orderHeaders: ["订单", "路线", "司机", "金额", "状态"],
+        driversPanel: ["司机队列", "空闲车辆优先匹配"],
+        noResult: "没有匹配结果",
+        status: {
+          waiting: "待派单",
+          accepted: "已接单",
+          finished: "已完成",
+          cancelled: "已取消",
+          online: "空闲",
+          service: "服务中",
+          rest: "休息"
+        },
+        driverNames: { zhang: "张师傅", chen: "陈师傅", liu: "刘师傅", wang: "王师傅", zhao: "赵师傅" },
+        locations: {
+          peoplesSquare: "人民广场",
+          hongqiao: "虹桥火车站",
+          lujiazui: "陆家嘴",
+          jingan: "静安寺",
+          xujiahui: "徐家汇",
+          bund: "外滩",
+          wujiaochang: "五角场",
+          xintiandi: "新天地",
+          centuryPark: "世纪公园",
+          southStation: "上海南站",
+          defaultPickup: "人民广场 5 号口",
+          defaultDropoff: "虹桥火车站 T2"
+        },
+        units: { km: "km", min: "分钟", second: "秒", distance: "距离", today: "今日", income: "收入", arrival: "到达" },
+        emptyDriver: "待派单",
+        currentStatus: {
+          accepted: "{driver} 已接单",
+          pickup: "{driver} 前往接驾",
+          finished: "{id} 已完成"
+        },
+        toasts: {
+          rideAccepted: "{driver} 已接单，预计 {eta} 到达",
+          rideWaiting: "已创建订单，正在等待司机接单",
+          noWaiting: "暂无待接订单",
+          accepted: "{driver} 已接受 {id}",
+          noActive: "该司机没有进行中的订单",
+          finished: "{id} 已完成，收入 {amount}",
+          surgeOn: "已开启高峰调价与热区提醒",
+          surgeOff: "已恢复普通计价策略",
+          dispatch: "已向休息司机发送补充运力通知",
+          refresh: "实时数据已刷新",
+          locate: "已定位最近车辆",
+          layer: "已切换到{layer}图层",
+          language: "语言已切换为中文"
+        }
+      },
+      "en-US": {
+        langName: "English",
+        title: "SwiftRide Dispatch System",
+        brand: "SwiftRide",
+        brandSub: "Urban mobility console",
+        mark: "SR",
+        nav: { passenger: "Passenger", driver: "Driver", admin: "Ops" },
+        titles: {
+          passenger: ["Passenger Booking", "Enter pickup and destination to estimate fare and match the nearest driver."],
+          driver: ["Driver Desk", "Accept nearby trips and update pickup or completion status."],
+          admin: ["Operations Board", "Monitor orders, drivers, revenue, and peak-hour capacity."]
+        },
+        search: "Search orders, drivers, places",
+        refresh: "Refresh",
+        sideOrders: "Orders Today",
+        sideDrivers: "Online Drivers",
+        passengerPanel: ["Create Trip", "Smart fare estimate and auto dispatch"],
+        pickup: "Pickup",
+        dropoff: "Destination",
+        carType: "Car Type",
+        passengerCount: "Passengers",
+        carTypes: { comfort: "Comfort", economy: "Economy", business: "Business" },
+        fare: { price: "Estimated Fare", distance: "Distance", eta: "Wait Time" },
+        callRide: "Book Now",
+        driverPanel: ["Driver Workspace", "Accept, depart, and complete trips"],
+        currentVehicle: "Current Vehicle",
+        waitingOrders: "Open Orders",
+        todayIncome: "Today Income",
+        rating: "Service Rating",
+        accept: "Accept Nearest Order",
+        finish: "Mark Complete",
+        adminPanel: ["Operations Dispatch", "Order monitoring, driver map, and exception handling"],
+        surge: "Peak Pricing",
+        completion: "Completion",
+        complaints: "Complaints",
+        avgResponse: "Avg Response",
+        dispatch: "Boost Capacity",
+        layers: { label: "Map Layers", traffic: "Traffic", drivers: "Drivers", heat: "Hotspots" },
+        locate: "Locate",
+        pins: { pickup: "P", dropoff: "D" },
+        mapFooter: { area: "Dispatch Area", traffic: "Traffic Index", nearest: "Nearest Driver", status: "Order Status" },
+        areaValue: "Shanghai Core",
+        trafficNormal: "Moderate 62",
+        trafficPeak: "Peak 88",
+        initialStatus: "Waiting Dispatch",
+        metrics: { active: "Active Orders", pending: "Pending Orders", online: "Online Drivers", gmv: "Revenue Today" },
+        ordersPanel: ["Order List", "Passenger and driver statuses stay in sync"],
+        orderHeaders: ["Order", "Route", "Driver", "Fare", "Status"],
+        driversPanel: ["Driver Queue", "Idle cars are matched first"],
+        noResult: "No matching results",
+        status: {
+          waiting: "Pending",
+          accepted: "Accepted",
+          finished: "Completed",
+          cancelled: "Cancelled",
+          online: "Idle",
+          service: "In Service",
+          rest: "Resting"
+        },
+        driverNames: { zhang: "Zhang", chen: "Chen", liu: "Liu", wang: "Wang", zhao: "Zhao" },
+        locations: {
+          peoplesSquare: "People's Square",
+          hongqiao: "Hongqiao Railway Station",
+          lujiazui: "Lujiazui",
+          jingan: "Jing'an Temple",
+          xujiahui: "Xujiahui",
+          bund: "The Bund",
+          wujiaochang: "Wujiaochang",
+          xintiandi: "Xintiandi",
+          centuryPark: "Century Park",
+          southStation: "Shanghai South Railway Station",
+          defaultPickup: "People's Square Gate 5",
+          defaultDropoff: "Hongqiao Railway Station T2"
+        },
+        units: { km: "km", min: "min", second: "sec", distance: "Distance", today: "Today", income: "Income", arrival: "away" },
+        emptyDriver: "Unassigned",
+        currentStatus: {
+          accepted: "{driver} accepted",
+          pickup: "{driver} is heading to pickup",
+          finished: "{id} completed"
+        },
+        toasts: {
+          rideAccepted: "{driver} accepted. ETA {eta}",
+          rideWaiting: "Order created. Waiting for a driver.",
+          noWaiting: "No pending orders",
+          accepted: "{driver} accepted {id}",
+          noActive: "This driver has no active order",
+          finished: "{id} completed. Income {amount}",
+          surgeOn: "Peak pricing and hotspot alerts enabled",
+          surgeOff: "Standard pricing restored",
+          dispatch: "Capacity request sent to resting drivers",
+          refresh: "Live data refreshed",
+          locate: "Nearest vehicle located",
+          layer: "Switched to {layer} layer",
+          language: "Language switched to English"
+        }
+      },
+      "ar-SA": {
+        langName: "العربية",
+        title: "نظام سويفت رايد لإدارة سيارات الأجرة",
+        brand: "سويفت رايد",
+        brandSub: "لوحة تشغيل التنقل الحضري",
+        mark: "سر",
+        nav: { passenger: "الراكب", driver: "السائق", admin: "التشغيل" },
+        titles: {
+          passenger: ["حجز رحلة", "أدخل نقطة الانطلاق والوجهة ليحسب النظام السعر ويطابق أقرب سائق."],
+          driver: ["مكتب السائق", "اقبل الرحلات القريبة وحدث حالة الوصول أو الإكمال."],
+          admin: ["لوحة التشغيل", "راقب الطلبات والسائقين والإيرادات وسعة أوقات الذروة."]
+        },
+        search: "ابحث عن طلب أو سائق أو موقع",
+        refresh: "تحديث",
+        sideOrders: "طلبات اليوم",
+        sideDrivers: "السائقون المتصلون",
+        passengerPanel: ["إنشاء رحلة", "تسعير ذكي وتوزيع تلقائي"],
+        pickup: "نقطة الانطلاق",
+        dropoff: "الوجهة",
+        carType: "نوع المركبة",
+        passengerCount: "عدد الركاب",
+        carTypes: { comfort: "مريحة", economy: "اقتصادية", business: "أعمال" },
+        fare: { price: "السعر المتوقع", distance: "المسافة", eta: "وقت الانتظار" },
+        callRide: "احجز الآن",
+        driverPanel: ["مساحة عمل السائق", "قبول الرحلات والانطلاق وإكمال الطلب"],
+        currentVehicle: "المركبة الحالية",
+        waitingOrders: "طلبات مفتوحة",
+        todayIncome: "دخل اليوم",
+        rating: "تقييم الخدمة",
+        accept: "قبول أقرب طلب",
+        finish: "تحديد كمكتمل",
+        adminPanel: ["توزيع التشغيل", "مراقبة الطلبات وخريطة السائقين ومعالجة الاستثناءات"],
+        surge: "تسعير الذروة",
+        completion: "نسبة الإكمال",
+        complaints: "الشكاوى",
+        avgResponse: "متوسط الاستجابة",
+        dispatch: "زيادة السعة",
+        layers: { label: "طبقات الخريطة", traffic: "المرور", drivers: "السائقون", heat: "المناطق النشطة" },
+        locate: "تحديد",
+        pins: { pickup: "ب", dropoff: "و" },
+        mapFooter: { area: "منطقة التشغيل", traffic: "مؤشر الازدحام", nearest: "أقرب سائق", status: "حالة الطلب" },
+        areaValue: "وسط شنغهاي",
+        trafficNormal: "متوسط 62",
+        trafficPeak: "ذروة 88",
+        initialStatus: "بانتظار التوزيع",
+        metrics: { active: "طلبات نشطة", pending: "طلبات معلقة", online: "سائقون متصلون", gmv: "إيراد اليوم" },
+        ordersPanel: ["قائمة الطلبات", "مزامنة حالة الراكب والسائق فوريا"],
+        orderHeaders: ["الطلب", "المسار", "السائق", "الأجرة", "الحالة"],
+        driversPanel: ["قائمة السائقين", "تطابق المركبات المتاحة أولا"],
+        noResult: "لا توجد نتائج مطابقة",
+        status: {
+          waiting: "معلق",
+          accepted: "مقبول",
+          finished: "مكتمل",
+          cancelled: "ملغى",
+          online: "متاح",
+          service: "في الخدمة",
+          rest: "استراحة"
+        },
+        driverNames: { zhang: "جانغ", chen: "تشن", liu: "ليو", wang: "وانغ", zhao: "تشاو" },
+        locations: {
+          peoplesSquare: "ساحة الشعب",
+          hongqiao: "محطة هونغتشياو للقطارات",
+          lujiazui: "لوجياتسوي",
+          jingan: "معبد جينغان",
+          xujiahui: "شوجياهوي",
+          bund: "البوند",
+          wujiaochang: "ووجياوتشانغ",
+          xintiandi: "شينتياندي",
+          centuryPark: "حديقة القرن",
+          southStation: "محطة شنغهاي الجنوبية",
+          defaultPickup: "ساحة الشعب، البوابة 5",
+          defaultDropoff: "محطة هونغتشياو T2"
+        },
+        units: { km: "كم", min: "دقيقة", second: "ثانية", distance: "المسافة", today: "اليوم", income: "الدخل", arrival: "للوصول" },
+        emptyDriver: "غير معين",
+        currentStatus: {
+          accepted: "قبل {driver} الطلب",
+          pickup: "{driver} في الطريق إلى نقطة الانطلاق",
+          finished: "اكتمل {id}"
+        },
+        toasts: {
+          rideAccepted: "قبل {driver} الطلب. الوقت المتوقع {eta}",
+          rideWaiting: "تم إنشاء الطلب. بانتظار السائق.",
+          noWaiting: "لا توجد طلبات معلقة",
+          accepted: "قبل {driver} الطلب {id}",
+          noActive: "لا يوجد طلب نشط لهذا السائق",
+          finished: "اكتمل {id}. الدخل {amount}",
+          surgeOn: "تم تفعيل تسعير الذروة وتنبيهات المناطق النشطة",
+          surgeOff: "تمت استعادة التسعير العادي",
+          dispatch: "تم إرسال طلب زيادة السعة إلى السائقين في الاستراحة",
+          refresh: "تم تحديث البيانات المباشرة",
+          locate: "تم تحديد أقرب مركبة",
+          layer: "تم التبديل إلى طبقة {layer}",
+          language: "تم تغيير اللغة إلى العربية"
+        }
+      }
+    };
+
+    const drivers = [
+      { id: "D1028", nameKey: "zhang", plate: "沪A-8K21", status: "online", distance: 1.2, x: 31, y: 44, income: 426 },
+      { id: "D1176", nameKey: "chen", plate: "沪B-5Q90", status: "service", distance: 2.8, x: 56, y: 52, income: 388 },
+      { id: "D1209", nameKey: "liu", plate: "沪D-2P18", status: "online", distance: 3.4, x: 68, y: 31, income: 502 },
+      { id: "D1330", nameKey: "wang", plate: "沪F-7L66", status: "rest", distance: 4.1, x: 18, y: 68, income: 296 },
+      { id: "D1402", nameKey: "zhao", plate: "沪C-9N03", status: "online", distance: 2.1, x: 82, y: 64, income: 444 }
+    ];
+
+    const orders = [
+      { id: "R20260616001", fromKey: "peoplesSquare", toKey: "hongqiao", driverKey: "zhang", amount: 58, status: "accepted" },
+      { id: "R20260616002", fromKey: "lujiazui", toKey: "jingan", driverKey: null, amount: 34, status: "waiting" },
+      { id: "R20260616003", fromKey: "xujiahui", toKey: "bund", driverKey: "chen", amount: 46, status: "accepted" },
+      { id: "R20260616004", fromKey: "wujiaochang", toKey: "xintiandi", driverKey: "liu", amount: 52, status: "finished" },
+      { id: "R20260616005", fromKey: "centuryPark", toKey: "southStation", driverKey: null, amount: 42, status: "waiting" }
+    ];
+
+    const supportedLangs = ["zh-CN", "en-US", "ar-SA"];
+    const rtlLangs = new Set(["ar-SA"]);
+    let currentLang = supportedLangs.includes(localStorage.getItem("swiftRideLang")) ? localStorage.getItem("swiftRideLang") : "zh-CN";
+    let currentView = "passenger";
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+    const map = $("#map");
+    const toast = $("#toast");
+    const t = () => i18n[currentLang];
+    const fill = (template, values) => template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "");
+
+    function driverName(driverOrKey) {
+      const key = typeof driverOrKey === "string" ? driverOrKey : driverOrKey.nameKey;
+      return t().driverNames[key] || key;
+    }
+
+    function routeText(order) {
+      if (order.routeText) return order.routeText[currentLang] || order.routeText["zh-CN"];
+      if (currentLang === "ar-SA") return `من ${t().locations[order.fromKey]} إلى ${t().locations[order.toKey]}`;
+      return `${t().locations[order.fromKey]} -> ${t().locations[order.toKey]}`;
+    }
+
+    function money(value) {
+      return "¥" + Number(value).toLocaleString(currentLang);
+    }
+
+    function duration(value) {
+      return `${value} ${t().units.min}`;
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function setText(selector, value) {
+      const node = $(selector);
+      if (node) node.textContent = value;
+    }
+
+    function setLabelText(selector, value) {
+      const label = $(selector);
+      if (!label) return;
+      const textNode = Array.from(label.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+      if (textNode) {
+        textNode.textContent = value + "\n                ";
+      } else {
+        label.prepend(document.createTextNode(value + "\n                "));
+      }
+    }
+
+    function setPanelHead(panelSelector, values) {
+      setText(`${panelSelector} .panel-head h3`, values[0]);
+      setText(`${panelSelector} .panel-head span`, values[1]);
+    }
+
+    function updateCurrentStatusText() {
+      const node = $("#currentStatus");
+      if (!node.dataset.state || node.dataset.state === "waiting") {
+        node.textContent = t().initialStatus;
+        return;
+      }
+      if (node.dataset.state === "finished") {
+        node.textContent = fill(t().currentStatus.finished, { id: node.dataset.orderId || "" });
+        return;
+      }
+      const driver = node.dataset.driverKey ? driverName(node.dataset.driverKey) : "";
+      node.textContent = fill(t().currentStatus[node.dataset.state], { driver });
+    }
+
+    function applyStaticText() {
+      const copy = t();
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = rtlLangs.has(currentLang) ? "rtl" : "ltr";
+      document.title = copy.title;
+      setText(".brand-mark", copy.mark);
+      setText(".brand h1", copy.brand);
+      setText(".brand p", copy.brandSub);
+
+      $$(".nav button").forEach(btn => {
+        const label = copy.nav[btn.dataset.view];
+        btn.title = label;
+        btn.querySelector("span").textContent = label;
+      });
+
+      $("#globalSearch").placeholder = copy.search;
+      $("#refreshBtn").lastChild.textContent = ` ${copy.refresh}`;
+      $("#refreshBtn").title = copy.refresh;
+      setText(".side-stat:nth-child(1) span", copy.sideOrders);
+      setText(".side-stat:nth-child(2) span", copy.sideDrivers);
+
+      setPanelHead("#passengerPanel", copy.passengerPanel);
+      setLabelText("#rideForm > label:nth-of-type(1)", copy.pickup);
+      setLabelText("#rideForm > label:nth-of-type(2)", copy.dropoff);
+      setLabelText(".two label:nth-child(1)", copy.carType);
+      setLabelText(".two label:nth-child(2)", copy.passengerCount);
+      $("#carType").querySelector('[value="comfort"]').textContent = copy.carTypes.comfort;
+      $("#carType").querySelector('[value="economy"]').textContent = copy.carTypes.economy;
+      $("#carType").querySelector('[value="business"]').textContent = copy.carTypes.business;
+      $$(".fare").at(0).querySelectorAll("span")[0].textContent = copy.fare.price;
+      $$(".fare").at(0).querySelectorAll("span")[1].textContent = copy.fare.distance;
+      $$(".fare").at(0).querySelectorAll("span")[2].textContent = copy.fare.eta;
+      $("#rideForm button").lastChild.textContent = ` ${copy.callRide}`;
+
+      setPanelHead("#driverPanel", copy.driverPanel);
+      setText("#driverPanel .badge", copy.status.online);
+      setLabelText("#driverPanel label", copy.currentVehicle);
+      const driverFareLabels = $$("#driverPanel .fare span");
+      driverFareLabels[0].textContent = copy.waitingOrders;
+      driverFareLabels[1].textContent = copy.todayIncome;
+      driverFareLabels[2].textContent = copy.rating;
+      $("#acceptBtn").lastChild.textContent = ` ${copy.accept}`;
+      $("#finishBtn").lastChild.textContent = ` ${copy.finish}`;
+
+      setPanelHead("#adminPanel", copy.adminPanel);
+      $("#surgeBtn").lastChild.textContent = ` ${copy.surge}`;
+      const adminFareLabels = $$("#adminPanel .fare span");
+      adminFareLabels[0].textContent = copy.completion;
+      adminFareLabels[1].textContent = copy.complaints;
+      adminFareLabels[2].textContent = copy.avgResponse;
+      $("#dispatchBtn").lastChild.textContent = ` ${copy.dispatch}`;
+
+      $(".segmented").setAttribute("aria-label", copy.layers.label);
+      $$(".segmented button").forEach(btn => btn.textContent = copy.layers[btn.dataset.layer]);
+      $("#locateBtn").lastChild.textContent = ` ${copy.locate}`;
+      $("#locateBtn").title = copy.locate;
+      $(".pickup span").textContent = copy.pins.pickup;
+      $(".dropoff span").textContent = copy.pins.dropoff;
+
+      const mapFooter = $$(".map-footer div");
+      mapFooter[0].querySelector("span").textContent = copy.mapFooter.area;
+      mapFooter[0].querySelector("strong").textContent = copy.areaValue;
+      mapFooter[1].querySelector("span").textContent = copy.mapFooter.traffic;
+      mapFooter[1].querySelector("strong").textContent = document.body.dataset.surge === "on" ? copy.trafficPeak : copy.trafficNormal;
+      mapFooter[2].querySelector("span").textContent = copy.mapFooter.nearest;
+      mapFooter[3].querySelector("span").textContent = copy.mapFooter.status;
+      updateCurrentStatusText();
+
+      const metricLabels = $$(".metric span");
+      metricLabels[0].textContent = copy.metrics.active;
+      metricLabels[1].textContent = copy.metrics.pending;
+      metricLabels[2].textContent = copy.metrics.online;
+      metricLabels[3].textContent = copy.metrics.gmv;
+
+      setText(".lower .panel:nth-child(1) .panel-head h3", copy.ordersPanel[0]);
+      setText(".lower .panel:nth-child(1) .panel-head span", copy.ordersPanel[1]);
+      $$("#ordersBody").forEach(() => {});
+      $$("thead th").forEach((th, index) => th.textContent = copy.orderHeaders[index]);
+      setText(".lower .panel:nth-child(2) .panel-head h3", copy.driversPanel[0]);
+      setText(".lower .panel:nth-child(2) .panel-head span", copy.driversPanel[1]);
+
+      $(".language-switch").setAttribute("aria-label", currentLang === "ar-SA" ? "اللغة" : currentLang === "en-US" ? "Language" : "语言");
+      $$(".language-switch button").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.lang === currentLang);
+        btn.title = i18n[btn.dataset.lang].langName;
+      });
+      switchView(currentView, false);
+    }
+
+    function renderDrivers() {
+      $("#driversList").innerHTML = drivers.map(driver => {
+        const name = driverName(driver);
+        const badgeClass = driver.status === "online" ? "online" : driver.status === "service" ? "service" : "rest";
+        return `
+          <div class="driver-row">
+            <div class="avatar">${name.slice(0, 1)}</div>
+            <div>
+              <strong>${name} · ${driver.plate}</strong>
+              <small>${driver.id} · ${t().units.distance} ${driver.distance.toFixed(1)} ${t().units.km} · ${t().units.today} ${money(driver.income)}</small>
+            </div>
+            <span class="badge ${badgeClass}">${t().status[driver.status]}</span>
+          </div>
+        `;
+      }).join("");
+
+      const selected = $("#driverSelect").value;
+      $("#driverSelect").innerHTML = drivers.map(driver => `<option value="${driver.id}">${driverName(driver)} · ${driver.plate}</option>`).join("");
+      if (selected) $("#driverSelect").value = selected;
+      document.querySelectorAll(".car").forEach(node => node.remove());
+      drivers.forEach(driver => {
+        const car = document.createElement("div");
+        car.className = `car ${driver.status === "online" ? "free" : driver.status === "service" ? "busy" : "offline"}`;
+        car.title = `${driverName(driver)} ${t().status[driver.status]}`;
+        car.style.left = `${driver.x}%`;
+        car.style.top = `${driver.y}%`;
+        car.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l2-5a3 3 0 0 1 3-2h8a3 3 0 0 1 3 2l2 5"/><path d="M5 13h14v5H5z"/></svg>`;
+        map.appendChild(car);
+      });
+    }
+
+    function renderOrders(filter = "") {
+      const text = filter.trim().toLowerCase();
+      const visible = orders.filter(order => {
+        const driver = order.driverKey ? driverName(order.driverKey) : t().emptyDriver;
+        return [order.id, routeText(order), driver, t().status[order.status]].join(" ").toLowerCase().includes(text);
+      });
+      $("#ordersBody").innerHTML = visible.map(order => `
+        <tr>
+          <td>${order.id}</td>
+          <td>${routeText(order)}</td>
+          <td>${order.driverKey ? driverName(order.driverKey) : t().emptyDriver}</td>
+          <td>${money(order.amount)}</td>
+          <td><span class="badge ${order.status}">${t().status[order.status]}</span></td>
+        </tr>
+      `).join("") || `<tr><td colspan="5">${t().noResult}</td></tr>`;
+      updateStats();
+    }
+
+    function updateStats() {
+      const waiting = orders.filter(order => order.status === "waiting").length;
+      const active = orders.filter(order => order.status === "accepted").length + 14;
+      const online = drivers.filter(driver => driver.status === "online").length + 21;
+      const gmv = orders.reduce((sum, order) => order.status !== "cancelled" ? sum + order.amount : sum, 12700);
+      $("#pendingOrders").textContent = waiting;
+      $("#waitingCount").textContent = waiting;
+      $("#activeOrders").textContent = active;
+      $("#onlineDrivers").textContent = online;
+      $("#sideDrivers").textContent = online;
+      $("#sideOrders").textContent = 123 + orders.length;
+      $("#gmv").textContent = money(gmv);
+      $("#completionRate").textContent = Math.max(82, Math.round(orders.filter(o => o.status === "finished").length / orders.length * 100 + 70)) + "%";
+      const nearest = drivers.filter(d => d.status === "online").sort((a,b) => a.distance - b.distance)[0];
+      if (nearest) $("#nearestDriver").textContent = `${driverName(nearest)} ${nearest.distance.toFixed(1)} ${t().units.km}`;
+    }
+
+    function estimateFare() {
+      const pickup = $("#pickupInput").value.length;
+      const dropoff = $("#dropoffInput").value.length;
+      const type = $("#carType").value;
+      const factor = type === "business" ? 1.55 : type === "comfort" ? 1.18 : 1;
+      const distance = Math.max(4.8, Math.min(32, (pickup + dropoff) * .72));
+      const price = Math.round((14 + distance * 2.1) * factor);
+      const eta = Math.max(2, Math.round(7 - Math.min(4, drivers.filter(d => d.status === "online").length)));
+      $("#fareDistance").textContent = `${distance.toFixed(1)} ${t().units.km}`;
+      $("#farePrice").textContent = money(price);
+      $("#fareEta").textContent = duration(eta);
+      return { distance, price, eta };
+    }
+
+    function switchView(view, render = true) {
+      currentView = view;
+      document.querySelectorAll(".nav button").forEach(btn => btn.classList.toggle("active", btn.dataset.view === view));
+      ["passenger", "driver", "admin"].forEach(name => {
+        $("#" + name + "Panel").classList.toggle("hidden", name !== view);
+      });
+      $("#viewTitle").textContent = t().titles[view][0];
+      $("#viewSubtitle").textContent = t().titles[view][1];
+      if (render) renderAll();
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("swiftRideLang", lang);
+      renderAll();
+      showToast(t().toasts.language);
+    }
+
+    function renderAll() {
+      applyStaticText();
+      estimateFare();
+      renderDrivers();
+      renderOrders($("#globalSearch").value);
+      const driver = drivers.find(item => item.id === $("#driverSelect").value) || drivers[0];
+      $("#driverIncome").textContent = money(driver.income);
+    }
+
+    $("#rideForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const estimate = estimateFare();
+      const free = drivers.filter(d => d.status === "online").sort((a,b) => a.distance - b.distance)[0];
+      const order = {
+        id: "R" + new Date().toISOString().replace(/\D/g, "").slice(0, 14),
+        routeText: {
+          "zh-CN": `${$("#pickupInput").value} -> ${$("#dropoffInput").value}`,
+          "en-US": `${$("#pickupInput").value} -> ${$("#dropoffInput").value}`,
+          "ar-SA": `من ${$("#pickupInput").value} إلى ${$("#dropoffInput").value}`
+        },
+        driverKey: free ? free.nameKey : null,
+        amount: estimate.price,
+        status: free ? "accepted" : "waiting"
+      };
+      orders.unshift(order);
+      if (free) {
+        free.status = "service";
+        free.x = 24;
+        free.y = 36;
+      }
+      $("#currentStatus").dataset.state = free ? "accepted" : "waiting";
+      $("#currentStatus").dataset.driverKey = free ? free.nameKey : "";
+      $("#currentStatus").dataset.orderId = order.id;
+      updateCurrentStatusText();
+      renderDrivers();
+      renderOrders($("#globalSearch").value);
+      showToast(free ? fill(t().toasts.rideAccepted, { driver: driverName(free), eta: duration(estimate.eta) }) : t().toasts.rideWaiting);
+    });
+
+    $("#acceptBtn").addEventListener("click", () => {
+      const order = orders.find(item => item.status === "waiting");
+      if (!order) return showToast(t().toasts.noWaiting);
+      const driver = drivers.find(item => item.id === $("#driverSelect").value) || drivers[0];
+      order.status = "accepted";
+      order.driverKey = driver.nameKey;
+      driver.status = "service";
+      driver.x = 45;
+      driver.y = 41;
+      $("#currentStatus").dataset.state = "pickup";
+      $("#currentStatus").dataset.driverKey = driver.nameKey;
+      $("#currentStatus").dataset.orderId = order.id;
+      updateCurrentStatusText();
+      renderDrivers();
+      renderOrders($("#globalSearch").value);
+      showToast(fill(t().toasts.accepted, { driver: driverName(driver), id: order.id }));
+    });
+
+    $("#finishBtn").addEventListener("click", () => {
+      const driver = drivers.find(item => item.id === $("#driverSelect").value) || drivers[0];
+      const order = orders.find(item => item.status === "accepted" && item.driverKey === driver.nameKey);
+      if (!order) return showToast(t().toasts.noActive);
+      order.status = "finished";
+      driver.status = "online";
+      driver.income += order.amount;
+      driver.distance = +(Math.random() * 3 + 1).toFixed(1);
+      driver.x = 76;
+      driver.y = 68;
+      $("#currentStatus").dataset.state = "finished";
+      $("#currentStatus").dataset.driverKey = driver.nameKey;
+      $("#currentStatus").dataset.orderId = order.id;
+      updateCurrentStatusText();
+      $("#driverIncome").textContent = money(driver.income);
+      renderDrivers();
+      renderOrders($("#globalSearch").value);
+      showToast(fill(t().toasts.finished, { id: order.id, amount: money(order.amount) }));
+    });
+
+    $("#surgeBtn").addEventListener("click", () => {
+      document.body.dataset.surge = document.body.dataset.surge === "on" ? "off" : "on";
+      const on = document.body.dataset.surge === "on";
+      $("#trafficIndex").textContent = on ? t().trafficPeak : t().trafficNormal;
+      showToast(on ? t().toasts.surgeOn : t().toasts.surgeOff);
+      estimateFare();
+    });
+
+    $("#dispatchBtn").addEventListener("click", () => {
+      drivers.forEach(driver => {
+        if (driver.status === "rest") driver.status = "online";
+      });
+      renderDrivers();
+      updateStats();
+      showToast(t().toasts.dispatch);
+    });
+
+    $("#refreshBtn").addEventListener("click", () => {
+      drivers.forEach(driver => {
+        driver.x = Math.max(10, Math.min(90, driver.x + (Math.random() * 12 - 6)));
+        driver.y = Math.max(16, Math.min(82, driver.y + (Math.random() * 12 - 6)));
+      });
+      renderDrivers();
+      showToast(t().toasts.refresh);
+    });
+
+    $("#locateBtn").addEventListener("click", () => {
+      const first = document.querySelector(".car.free, .car.busy");
+      if (first) {
+        first.animate([
+          { transform: "translate(-50%, -50%) scale(1)" },
+          { transform: "translate(-50%, -50%) scale(1.28)" },
+          { transform: "translate(-50%, -50%) scale(1)" }
+        ], { duration: 700, easing: "ease" });
+      }
+      showToast(t().toasts.locate);
+    });
+
+    document.querySelectorAll(".nav button").forEach(btn => {
+      btn.addEventListener("click", () => switchView(btn.dataset.view));
+    });
+
+    document.querySelectorAll(".segmented button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".segmented button").forEach(item => item.classList.toggle("active", item === btn));
+        showToast(fill(t().toasts.layer, { layer: btn.textContent }));
+      });
+    });
+
+    document.querySelectorAll(".language-switch button").forEach(btn => {
+      btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+    });
+
+    ["pickupInput", "dropoffInput", "carType"].forEach(id => $("#" + id).addEventListener("input", estimateFare));
+    $("#globalSearch").addEventListener("input", (event) => renderOrders(event.target.value));
+    $("#driverSelect").addEventListener("change", (event) => {
+      const driver = drivers.find(item => item.id === event.target.value);
+      if (driver) $("#driverIncome").textContent = money(driver.income);
+    });
+
+    $("#pickupInput").value = t().locations.defaultPickup;
+    $("#dropoffInput").value = t().locations.defaultDropoff;
+    renderAll();
+  </script>
+</body>
+</html>
